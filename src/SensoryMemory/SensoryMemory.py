@@ -45,7 +45,7 @@ class SensoryMemory:
 
         #Notify PAM of agent's current state and surrounding tiles
         self.observer.notify(event, self.pam)
-        return state, action, surrounding_tiles, col, row
+        #return state, action, surrounding_tiles, col, row
 
     def get_sensory_content(self, state, outcome, modality=None, params=None):
         """

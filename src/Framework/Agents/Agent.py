@@ -35,6 +35,8 @@ class Agent:
         self.info = None
         self.truncated = False
         self.surrounding_tiles = None
+        self.col = None
+        self.row = None
         #self.procedural_memory.add_scheme("safe", 2)
         #self.procedural_memory.add_scheme("danger", 0)
 
@@ -72,26 +74,32 @@ class Agent:
         procedural_memory = self.get_module("ProceduralMemory")
         sensory_motor_memory = self.get_module("SensoryMotorMemory")
 
-        #Agents behavior logic
-        self.state, self.action, surrounding_tiles, col, row, = \
-            (sensory_memory.run_sensors(self.state, None, None, self))
-        print(f"Initial Observation: State: {self.state}, Percept: {surrounding_tiles}")
+
 
         while not self.done:
             if self.state is None:
                 # Use environment instance to reset
-                state, info, surrounding_tiles, col, row = self.env.reset(self)
-            else:
-                col, row = self.env.col, self.env.row
                 # Agents behavior logic
-                sensory_memory.run_sensors(self.state, col, row, self)
+                #(self.state, self.action, surrounding_tiles, self.col,self.row,
+                 #) = (
+                sensory_memory.run_sensors(self.state, None, None, self)
+                print(
+                    f"Initial Observation: State: {self.state}, "
+                    f"Percept: {self.surrounding_tiles}")
+
+                #state, info, surrounding_tiles, col, row = self.env.reset(self)
+            else:
+                self.col, self.row = self.env.col, self.env.row
+                # Agents behavior logic
+                sensory_memory.run_sensors(self.state, self.col, self.row, self)
 
             #self.action = self.env.action_space.sample()
             #step_result = self.env.step(action, self)
             #state, reward, done, truncated, info, surrounding_tiles = step_result
             print(f"Action: {self.action}\n")
-            print(f"State: {self.state}, Reward: {self.reward}, Done: {self.done}, Info: {self.info}")
-            print(f"Surrounding Tiles: {surrounding_tiles}")
+            print(f"State: {self.state}, Reward: {self.reward}, "
+                  f"Done: {self.done}, Info: {self.info}")
+            print(f"Surrounding Tiles: {self.surrounding_tiles}")
 
 
             #state, reward, done, truncated, info = self.env.step(action)

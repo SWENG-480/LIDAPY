@@ -25,7 +25,7 @@ class FrozenLakeEnvironment:
         self.env = gym.make(
             'FrozenLake-v1',
             desc=None,
-            is_slippery=True,
+            is_slippery=False,
             render_mode=render_mode)
 
         self.action_space = self.env.action_space  # action_space attribute
@@ -55,7 +55,7 @@ class FrozenLakeEnvironment:
         surrounding_tiles = self.get_surrounding_tiles(self.row, self.col)
         self.agent_observer.notify_(state, module, reward, done, truncated,
                               info, action, surrounding_tiles)
-        return state, reward, done, truncated, info, surrounding_tiles     # action chosen by the agent
+        #return state, reward, done, truncated, info, surrounding_tiles     # action chosen by the agent
         # ^returns state, reward, done, truncated, info
 
     # render environment's current state:

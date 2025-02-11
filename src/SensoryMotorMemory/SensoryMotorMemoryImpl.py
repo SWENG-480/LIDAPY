@@ -39,15 +39,14 @@ class SensoryMotorMemoryImpl:
         #Example: Reading the current state or rewards
         self.state = state
         self.action = action
-        state, reward, done, truncated, info = (
-            self.send_action_execution_command(action, percept))
+        self.send_action_execution_command(action, percept)
         '''
         #state, info = self.environment.reset() # use environment instance to reset
         #percept = self.pam.retrieve_associations(state) # retrieve percept from PAM
         #return state, percept # get state and percept from environment instance
         #return state, info # get state and info from environment instance
         '''
-        return state, reward, done, truncated, info
+        #return state, reward, done, truncated, info
 
 
     def send_action_execution_command(self, action_plan, percept):
@@ -59,11 +58,15 @@ class SensoryMotorMemoryImpl:
 
         if percept == "danger":
             print(f"\nPercept: {percept}!..Rerouting")
+            self.observer.notify_(self.state, self.agent, self.reward,
+                                  self.done, self.truncated,
+            self.info, action_plan,self.surrounding_tiles)
         else:
             #Logic to retrieve and return data based on the modality.
-            (self.state, self.reward, self.done, self.truncated, self.info,
-             self.surrounding_tiles) = (
-                self.environment.step(action_plan, self.agent))
+            #(self.state, self.reward, self.done, self.truncated, self.info,
+            # self.surrounding_tiles) = (
+            print(f"\nPercept: {percept}..")
+            self.environment.step(action_plan, self.agent)
         #state, reward, done, truncated, info = self.motor_plan.execute(action_plan)
-        return self.state, self.reward, self.done, self.truncated, self.info
+        #return self.state, self.reward, self.done, self.truncated, self.info
         #return {"modality": modality, "params": params}

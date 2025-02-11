@@ -12,7 +12,6 @@ if __name__ == "__main__":
         "action_space_size": 4,
         "map_size": 5
     }
-
     # create factory and initialize agent
     factory = ConcreteAgentFactory()
     agent = factory.get_agent(agent_type)
