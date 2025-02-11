@@ -55,7 +55,6 @@ class SensoryMotorMemoryImpl:
         :param action_plan: Specifying the action(s) to take
         :return: content corresponding to the action_plan
         """
-
         if percept == "danger":
             print(f"\nPercept: {percept}!..Rerouting")
             self.observer.notify_(self.state, self.agent, self.reward,
@@ -63,10 +62,5 @@ class SensoryMotorMemoryImpl:
             self.info, action_plan,self.surrounding_tiles)
         else:
             #Logic to retrieve and return data based on the modality.
-            #(self.state, self.reward, self.done, self.truncated, self.info,
-            # self.surrounding_tiles) = (
             print(f"\nPercept: {percept}..")
             self.environment.step(action_plan, self.agent)
-        #state, reward, done, truncated, info = self.motor_plan.execute(action_plan)
-        #return self.state, self.reward, self.done, self.truncated, self.info
-        #return {"modality": modality, "params": params}

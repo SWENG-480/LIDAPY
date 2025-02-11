@@ -37,20 +37,6 @@ class Agent:
         self.surrounding_tiles = None
         self.col = None
         self.row = None
-        #self.procedural_memory.add_scheme("safe", 2)
-        #self.procedural_memory.add_scheme("danger", 0)
-
-        '''
-        # state rules for 4x4 map
-        self.procedural_memory.add_scheme("state-0", 2)  # move right
-        self.procedural_memory.add_scheme("state-1", 2)  # move right
-        self.procedural_memory.add_scheme("state-2", 1)  # move down
-        self.procedural_memory.add_scheme("state-6", 1)  # move down
-        self.procedural_memory.add_scheme("state-9", 2)  # move right
-        self.procedural_memory.add_scheme("state-10", 2)  # move right
-        self.procedural_memory.add_scheme("state-14", 3)  # move up
-        self.procedural_memory.add_scheme("goal", None) # finish when goal reached
-        '''
 
     def add_module(self, module_name, module_instance):
         self.modules[module_name] = module_instance  # add a module to the agent
@@ -74,55 +60,21 @@ class Agent:
         procedural_memory = self.get_module("ProceduralMemory")
         sensory_motor_memory = self.get_module("SensoryMotorMemory")
 
-
-
+        # Agents behavior logic
         while not self.done:
             if self.state is None:
-                # Use environment instance to reset
-                # Agents behavior logic
-                #(self.state, self.action, surrounding_tiles, self.col,self.row,
-                 #) = (
                 sensory_memory.run_sensors(self.state, None, None, self)
                 print(
                     f"Initial Observation: State: {self.state}, "
                     f"Percept: {self.surrounding_tiles}")
-
-                #state, info, surrounding_tiles, col, row = self.env.reset(self)
             else:
                 self.col, self.row = self.env.col, self.env.row
-                # Agents behavior logic
                 sensory_memory.run_sensors(self.state, self.col, self.row, self)
 
-            #self.action = self.env.action_space.sample()
-            #step_result = self.env.step(action, self)
-            #state, reward, done, truncated, info, surrounding_tiles = step_result
             print(f"Action: {self.action}\n")
             print(f"State: {self.state}, Reward: {self.reward}, "
                   f"Done: {self.done}, Info: {self.info}")
             print(f"Surrounding Tiles: {self.surrounding_tiles}")
 
-
-            #state, reward, done, truncated, info = self.env.step(action)
-            #self.env.render()
-
-            #surrounding_tiles = self.env.get_surrounding_tiles(self.env.row, self.env.col)
-
-            '''
-            state_str = "state-"
-            state_id_str = state_id.__str__()
-            state_str += state_id_str
-            
-            if state == 15:         # goal state in 4x4 map
-                self.pam.learn(state_str, "goal")
-            elif reward == 0 and done: # fell into a hole
-                self.pam.learn(state_str, "hole")
-                print(f"Action: {action}\n")
-            else: # safe state
-                self.pam.learn(state_str, "safe")
-
-            action = env.action_space.sample() #Take a random actio
-            self.procedural_memory.add_scheme(state_str, action)
-            percept = self.pam.retrieve_associations(state_str)  # update percept
-            '''
         env.close()
 
