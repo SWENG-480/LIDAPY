@@ -2,9 +2,9 @@
 #Pennsylvania State University, Course : SWENG480
 #Authors: Katie Killian, Brian Wachira, and Nicole Vadillo
 
-#from Environment import Environment as env
+from src.Framework.Initialization.ConcreteAgentFactory import \
+    ConcreteAgentFactory
 from src.ModuleObserver.ModuleNotifier import ModuleNotifier
-from src.ModuleObserver.ModuleObserver import ModuleObserver
 from src.PAM.PAMAdapter import PAMAdapter
 
 """
@@ -12,17 +12,27 @@ This module can temporarily store sensory data from the environment and then
 process and transfer to further working memory.
 """
 
-class SensoryMemory:
+class SensoryMemory(ConcreteAgentFactory):
     def __init__(self, environment=None, pam=None, agent=None):
-        self.listeners = [] #initializing listener class
-        self.environment = environment  # store environment reference
-        self.pam = pam # reference to perceptual associative memory
-        self.notifier = ModuleNotifier()
-        self.observer = PAMAdapter()
-        self.state = None
+        super().__init__()
+        # store environment reference
+        self.add_module("environment", environment)
+
+        # reference to perceptual associative memory
+        self.add_module("pam", pam)
+
+        # current agent
+        self.add_module("agent", agent)
+
+        # PAM observer/notifier
+        self.add_module("notifier", ModuleNotifier())
+        self.add_module("observer", PAMAdapter())
+
+        #self.listeners = [] #initializing listener class
+        self.add_attribute("state", None)
 
     def notify(self, state):
-        self.state = state
+        self.update_attribute("state", state)
 
     def run_sensors(self, state=None, col=None, row=None, agent=None):
         """All sensors associated will run with the memory"""
@@ -30,22 +40,27 @@ class SensoryMemory:
         #Example: Reading the current state or rewards
         if state is None:
             # Use environment instance to reset
-            state, info, surrounding_tiles, col, row = (self.environment.
-                                                        reset(self))
+            state, info, surrounding_tiles, col, row = (
+                self.get_module("environment").reset(self))
         else:
-            col, row = self.environment.col, self.environment.row
+            col, row = (self.get_module("environment").col,
+                        self.get_module("environment").row)
 
-        surrounding_tiles = (self.environment.
-                             get_surrounding_tiles(self.environment.row,
-                                                   self.environment.col))
+        #Get agent's surroundings
+        surrounding_tiles = (self.get_module("environment").
+                             get_surrounding_tiles(
+            self.get_module("environment").row,
+            self.get_module("environment").col))
 
-        action = self.environment.action_space.sample()
+        #Sample an action from environment action space
+        action = self.get_module("environment").action_space.sample()
+
+        #Bundle state, environment, and action info into dictionary
         event = {"state": state, "surrounding_tiles": surrounding_tiles,
                  "action": action}
 
-        #Notify PAM of agent's current state and surrounding tiles
-        self.observer.notify(event, self.pam)
-        #return state, action, surrounding_tiles, col, row
+        #Notify PAM of agent's state, surroundings and possible actions
+        self.get_module("observer").notify(event, self.get_module("pam"))
 
     def get_sensory_content(self, state, outcome, modality=None, params=None):
         """
@@ -54,6 +69,6 @@ class SensoryMemory:
         :param params: optional parameters to filter or specify the content
         :return: content corresponding to the modality
         """
-        self.pam.learn(state, outcome)
+        self.get_module("pam").learn(state, outcome)
         #Logic to retrieve and return data based on the modality.
         return {"modality": modality, "params": params}

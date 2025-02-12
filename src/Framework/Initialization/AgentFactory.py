@@ -13,3 +13,10 @@ class AgentFactory(ABC):
     @abstractmethod
     def get_agent(self, agent_type):
         pass
+
+    @abstractmethod
+    def add_module(self, module_name, module_instance):
+        pass
+
+    def get_module(self, module_name):
+        pass

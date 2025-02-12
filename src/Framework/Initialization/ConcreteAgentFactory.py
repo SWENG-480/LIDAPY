@@ -1,35 +1,28 @@
-from src.Framework.Agents.Agent import Agent
 from src.Framework.Initialization.AgentFactory import AgentFactory
-from src.ActionSelection.ActionSelection import ActionSelection
-from src.PAM.PAM import PerceptualAssociativeMemory
-from src.SensoryMemory.SensoryMemory import SensoryMemory
-from src.Environment.Environment import FrozenLakeEnvironment
-from src.ProceduralMemory.ProceduralMemory import ProceduralMemory
-from src.SensoryMotorMemory.SensoryMotorMemoryImpl import SensoryMotorMemoryImpl
-#from MotorPlanExecution.MotorPlanExecution import MPExecution
+
 
 class ConcreteAgentFactory(AgentFactory):
 # concrete factory for creating and initializing agents
+    def __init__(self):
+        super().__init__()
+        self.modules = {}
+        self.attributes = {}
 
     def get_agent(self, agent_type):
-        # create modules:
-        env = FrozenLakeEnvironment(render_mode=agent_type.get("render_mode", "human"))
+        return agent_type
 
-        # initialize the agent and add the modules:
-        agent = Agent()
+    def add_module(self, module_name, module_instance):
+        # add a module to the agent
+        self.modules[module_name] = module_instance
 
-        sensory_motor_memory = SensoryMotorMemoryImpl(env, agent)
-        action_selection = ActionSelection(env, sensory_motor_memory)
-        procedural_memory = ProceduralMemory(action_selection)
-        pam = PerceptualAssociativeMemory(procedural_memory)
-        sensory_memory = SensoryMemory(env, pam)
+    def get_module(self, module_name):
+        return self.modules.get(module_name)  # retrieve a module by name
 
-        agent.add_module("Environment", env)
-        agent.add_module("PAM", pam)
-        agent.add_module("SensoryMemory", sensory_memory)
-        agent.add_module("ProceduralMemory", procedural_memory)
-        agent.add_module("ActionSelection", action_selection)
-        agent.add_module("SensoryMotorMemory", sensory_motor_memory)
-        #agent.add_module("MotorPlanExecution", motor_plan_execution)
+    def add_attribute(self, attribute, value):
+        self.attributes[attribute] = value
 
-        return agent
+    def update_attribute(self, attribute_name, value):
+        self.attributes[attribute_name] = value
+
+    def get_attribute(self, attribute_name):
+        return self.attributes.get(attribute_name)
