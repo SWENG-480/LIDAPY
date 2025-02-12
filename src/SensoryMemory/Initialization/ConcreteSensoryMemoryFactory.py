@@ -6,8 +6,10 @@ class ConcreteSensoryMemoryFactory(SensoryMemoryFactory):
         super().__init__()
         self.attributes = {}
         self.modules = {}
+
     def create_sensory_memory(self, sensory_memory):
         return sensory_memory
+
     def add_attribute(self, attribute, value):
         self.attributes[attribute] = value
 
