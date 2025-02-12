@@ -6,13 +6,15 @@ from src.Framework.Initialization.ConcreteAgentFactory import \
     ConcreteAgentFactory
 from src.ModuleObserver.ModuleNotifier import ModuleNotifier
 from src.PAM.PAMAdapter import PAMAdapter
+from src.SensoryMemory.Initialization.ConcreteSensoryMemoryFactory import \
+    ConcreteSensoryMemoryFactory
 
 """
 This module can temporarily store sensory data from the environment and then
 process and transfer to further working memory.
 """
 
-class SensoryMemory(ConcreteAgentFactory):
+class SensoryMemory(ConcreteSensoryMemoryFactory):
     def __init__(self, environment=None, pam=None, agent=None):
         super().__init__()
         # store environment reference

@@ -8,20 +8,22 @@ from src.Framework.Agents.Agent import Agent
 from src.Framework.Initialization.ConcreteAgentFactory import ConcreteAgentFactory
 from src.PAM.PAM import PerceptualAssociativeMemory
 from src.ProceduralMemory.ProceduralMemory import ProceduralMemory
+from src.SensoryMemory.Initialization.ConcreteSensoryMemoryFactory import \
+    ConcreteSensoryMemoryFactory
 from src.SensoryMemory.SensoryMemory import SensoryMemory
 from src.SensoryMotorMemory.SensoryMotorMemoryImpl import \
     SensoryMotorMemoryImpl
 
 
 if __name__ == "__main__":
-    # create factory and initialize agent
-    factory = ConcreteAgentFactory()
-    agent = factory.get_agent(Agent())
+    # Create agent factory and initialize agent
+    agent_factory = ConcreteAgentFactory()
+    agent = agent_factory.get_agent(Agent())
 
-    #Add the environment module to the agent
+    # Add the environment module to the agent
     agent.add_module("FrozenLakeEnvironment", FrozenLakeEnvironment())
 
-    #Add Sensory Motor Memory module
+    # Add Sensory Motor Memory module
     agent.add_module("SensoryMotorMemoryImpl",
                      SensoryMotorMemoryImpl(
                          agent.get_module("FrozenLakeEnvironment"), agent))
@@ -40,11 +42,17 @@ if __name__ == "__main__":
                      PerceptualAssociativeMemory(
                          agent.get_module("ProceduralMemory")))
 
-    #Add the Sensory Memory module
-    agent.add_module("SensoryMemory",
-                     SensoryMemory(agent.get_module(
+    # Create sensory memory factory
+    sensory_mem_factory = ConcreteSensoryMemoryFactory()
+
+    # Initialize sensory memory from its factory
+    SensoryMemory = sensory_mem_factory.create_sensory_memory(
+        SensoryMemory(agent.get_module(
                          "FrozenLakeEnvironment"),
                      agent.get_module("PerceptualAssociativeMemory"),agent))
+
+    # Add the Sensory Memory module
+    agent.add_module("SensoryMemory", SensoryMemory)
 
     #Add attributes relevant to this agent
     agent.add_attribute("state", None)
