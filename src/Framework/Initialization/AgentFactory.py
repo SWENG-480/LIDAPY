@@ -4,10 +4,10 @@ from abc import ABC, abstractmethod
 class AgentFactory(ABC):
 
     """
-    Creates and returns a {@link Agent} from specified {@link Properties}
+    Creates and returns an Agent from a specified type
 	 @param agent_type
 	        Agent properties
-	 @return Constructed {@link Agent} object
+	 @return Constructed Agent object
     """
 
     @abstractmethod
