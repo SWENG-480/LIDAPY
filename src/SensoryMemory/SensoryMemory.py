@@ -2,8 +2,6 @@
 #Pennsylvania State University, Course : SWENG480
 #Authors: Katie Killian, Brian Wachira, and Nicole Vadillo
 
-from src.Framework.Initialization.ConcreteAgentFactory import \
-    ConcreteAgentFactory
 from src.ModuleObserver.ModuleNotifier import ModuleNotifier
 from src.PAM.PAMAdapter import PAMAdapter
 from src.SensoryMemory.Initialization.ConcreteSensoryMemoryFactory import \

@@ -22,12 +22,6 @@ class SensoryMotorMemoryImpl:
         self.notifier = ModuleNotifier()
         self.notifier.add_observer(self.observer)
         self.state = None
-        self.reward = None
-        self.done = None
-        self.truncated = None
-        self.info = None
-        self.surrounding_tiles = None
-        #self.motor_plan = motor_plan # reference to the motor_plan that will be executed
 
     def add_sensory_listener(self, listener):
         """Adding the listener to the memory"""
@@ -57,9 +51,7 @@ class SensoryMotorMemoryImpl:
         """
         if percept == "danger":
             print(f"\nPercept: {percept}!..Rerouting")
-            self.observer.notify_(self.state, self.agent, self.reward,
-                                  self.done, self.truncated,
-            self.info, action_plan,self.surrounding_tiles)
+            self.observer.notify(action_plan, self.agent)
         else:
             #Logic to retrieve and return data based on the modality.
             print(f"\nPercept: {percept}..")

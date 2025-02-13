@@ -18,6 +18,11 @@ class Agent(ConcreteAgentFactory):
         self.update_attribute("truncated", truncated)
         self.update_attribute("info", info)
         self.update_attribute("action", action)
+        self.update_attribute("surrounding_tiles", surrounding_tiles)
+
+    #Called when percept is 'danger' and no action taken
+    def notify_(self, action):
+        self.update_attribute("action", action)
 
     #Run the agent through the environment
     def run(self):
