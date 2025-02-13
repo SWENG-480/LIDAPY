@@ -2,46 +2,44 @@
 #Pennsylvania State University, Course : SWENG480
 #Authors: Katie Killian, Brian Wachira, and Nicole Vadillo
 
-#from Environment import Environment as env
-
 """
 This module can temporarily store sensory data from the environment and then
 process and transfer to further working memory.
 """
 from src.Framework.Agents.AgentAdapter import AgentAdapter
 from src.ModuleObserver.ModuleNotifier import ModuleNotifier
+from src.SensoryMotorMemory.Initialization.ConcreteSensoryMotorMemoryFactory import \
+    ConcreteSensoryMotorMemoryFactory
 
 
-class SensoryMotorMemoryImpl:
+class SensoryMotorMemoryImpl(ConcreteSensoryMotorMemoryFactory):
     def __init__(self, environment, agent):
-        self.listeners = [] #initializing an empty list to store the listeners
-        self.action = None  # store selected_action reference
-        self.environment = environment
-        self.agent = agent
-        self.observer = AgentAdapter()
-        self.notifier = ModuleNotifier()
-        self.notifier.add_observer(self.observer)
-        self.state = None
+        super().__init__()
+        # Add modules relevant to Sensory Motor Memory
+        self.add_module("environment", environment)
+        self.add_module("agent", agent)
+        self.add_module("AgentAdapter", AgentAdapter())
+        self.add_module("notifier", ModuleNotifier())
+        self.get_module("notifier").add_observer("AgentAdapter")
+
+        #Add sensory motor memory attributes
+        self.add_attribute("action", None)
+        self.add_attribute("state", None)
+        # initializing an empty list to store the listeners
+        self.add_attribute("listeners", [])
 
     def add_sensory_listener(self, listener):
         """Adding the listener to the memory"""
-        self.listeners.append(listener) #appending the listener to the list
+        self.get_attribute("listeners").append(listener)
+        #appending the listener to the list
 
     def notify(self, state, percept, action):
         """The selected action from action selection"""
         #Logic to gather information from the environment
         #Example: Reading the current state or rewards
-        self.state = state
-        self.action = action
+        self.update_attribute("state", state)
+        self.update_attribute("action", action)
         self.send_action_execution_command(action, percept)
-        '''
-        #state, info = self.environment.reset() # use environment instance to reset
-        #percept = self.pam.retrieve_associations(state) # retrieve percept from PAM
-        #return state, percept # get state and percept from environment instance
-        #return state, info # get state and info from environment instance
-        '''
-        #return state, reward, done, truncated, info
-
 
     def send_action_execution_command(self, action_plan, percept):
         """
@@ -51,8 +49,10 @@ class SensoryMotorMemoryImpl:
         """
         if percept == "danger":
             print(f"\nPercept: {percept}!..Rerouting")
-            self.observer.notify(action_plan, self.agent)
+            self.get_module("AgentAdapter").notify(action_plan,
+                                                   self.get_module("agent"))
         else:
             #Logic to retrieve and return data based on the modality.
             print(f"\nPercept: {percept}..")
-            self.environment.step(action_plan, self.agent)
+            self.get_module("environment").step(action_plan,
+                                                self.get_module("agent"))

@@ -4,82 +4,104 @@
 
 import gymnasium as gym
 
+from src.Environment.Initialization.ConcreteEnvironmentFactory import \
+    ConcreteEnvironmentFactory
 from src.Framework.Agents.AgentAdapter import AgentAdapter
 from src.ModuleObserver.ModuleNotifier import ModuleNotifier
 from src.SensoryMemory.SensoryMemoryModuleAdapter import \
     SensoryMemoryModuleAdapter
 
 """
-The environment is essential for preceiving, processing, and
+The environment is essential for receiving, processing, and
 integrating all sensory information, enabling the agent to interact 
 effectively.
 Sends Sensory information to the Sensory Memory.
 """
 
-class FrozenLakeEnvironment:
+class FrozenLakeEnvironment(ConcreteEnvironmentFactory):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
     col = 0     #Data to hold the current column the agent occupies
     row = 0     # Data to hold the current row the agent occupies
     def __init__(self, render_mode="human", size=4):
-        #generating the frozen lake environment
-        self.env = gym.make(
+        super().__init__()
+        # generate the frozen lake environment
+        self.add_module("env", gym.make(
             'FrozenLake-v1',
             desc=None,
             is_slippery=False,
-            render_mode=render_mode)
+            render_mode=render_mode))
 
-        self.action_space = self.env.action_space  # action_space attribute
-        self.notifier = ModuleNotifier()
-        self.sensory_observer = SensoryMemoryModuleAdapter()
-        self.agent_observer = AgentAdapter()
-        self.notifier.add_observer(self.sensory_observer)
-        self.notifier.add_observer(self.agent_observer)
-        self.col = 0 #Agents column position
-        self.row = 0 #Agents row position
+        # Add module attributes
+        self.add_attribute("action_space",
+                           self.get_module("env").action_space)
+        # Assuming the agent is started at (0,0)
+        self.add_attribute("col", 0) #Agents column position
+        self.add_attribute("row", 0) #Agents row position
+        self.add_attribute("surrounding_tiles", None)
 
-    #Reseting the environment to start a new episode
+        # Add modules relevant to the environment
+        self.add_module("notifier", ModuleNotifier())
+        self.add_module("SensoryMemoryModuleAdapter",
+                        SensoryMemoryModuleAdapter())
+        self.add_module("AgentAdapter", AgentAdapter())
+        self.get_module("notifier").add_observer(
+            self.get_module("SensoryMemoryModuleAdapter"))
+        self.get_module("notifier").add_observer(
+            self.get_module("AgentAdapter"))
+
+    #Resetting the environment to start a new episode
     def reset(self, module):
         #interacting with the environment by using Reset()
-        state, info = self.env.reset()
-        self.col, self.row = 0, 0 #Assuming the agent is started at (0,0)
-        surrounding_tiles = self.get_surrounding_tiles(self.row, self.col)
-        self.sensory_observer.notify(state, module)
-        return state, info, surrounding_tiles, self.col, self.row
+        state, info = self.get_module("env").reset()
+        self.col, self.row = 0, 0
+        self.update_attribute("surrounding_tiles",
+                              self.get_surrounding_tiles(self.row, self.col))
+        self.get_module("SensoryMemoryModuleAdapter").notify(state, module)
+        return (state, info, self.get_attribute("surrounding_tiles"), self.col,
+                self.row)
 
     # perform an action in environment:
     def step(self, action, module):
         #perform and update
-        #state, info, surrounding_tiles, self.col, self.row = self.reset(agent)
-        state, reward, done, truncated, info = self.env.step(action)
-        self.update_position(action) #updating the agents position based on the action
-        surrounding_tiles = self.get_surrounding_tiles(self.row, self.col)
-        self.agent_observer.notify_(state, module, reward, done, truncated,
-                              info, action, surrounding_tiles)
-        #return state, reward, done, truncated, info, surrounding_tiles     # action chosen by the agent
-        # ^returns state, reward, done, truncated, info
+        state, reward, done, truncated, info = (
+            self.get_module("env").step(action))
 
+        # updating the agents position based on the action
+        self.update_position(action)
+        self.update_attribute("surrounding_tiles",
+            self.get_surrounding_tiles(self.get_attribute("row"),
+                                       self.get_attribute("col")))
+        self.get_module("AgentAdapter").notify_(state, module, reward, done,
+                                                  truncated, info, action,
+                                       self.get_attribute("surrounding_tiles"))
     # render environment's current state:
     def render(self):
-        self.env.render()
+        self.get_module("env").render()
 
     # close the environment:
     def close(self):
-        self.env.close()
+        self.get_module("env").close()
 
+    # updating the agents position based on the action taken
     def update_position(self, action):
-        #updating the agents position based on the action taken
         if action == 3: #up
-            self.row = max(self.row - 1, 0)
+            self.update_attribute("row",
+                                  max(self.get_attribute("row") - 1, 0))
         elif action == 2: #Right
-            self.col = min(self.col + 1, self.env.unwrapped.desc.shape[1] - 1)
+            self.update_attribute("col",
+                                  min(self.get_attribute("col") + 1,
+                        self.get_module("env").unwrapped.desc.shape[1] - 1))
         elif action == 1: #down
-            self.row = min(self.row + 1, self.env.unwrapped.desc.shape[0] - 1)
+            self.update_attribute("row",
+                                  min(self.get_attribute("row") + 1,
+                        self.get_module("env").unwrapped.desc.shape[0] - 1))
         elif action == 0: #Left
-            self.col = max(self.col - 1, 0)
+            self.update_attribute("col",
+                                  max(self.get_attribute("col") - 1, 0))
 
+    # gathering information about the tiles surrounding the agent
     def get_surrounding_tiles(self, row, col):
-        #gathering information about the tiles surrounding the agent
-        desc = self.env.unwrapped.desc
+        desc = self.get_module("env").unwrapped.desc
         surrounding_tiles = {}
         directions = {
             "up":(max(row - 1, 0), col),

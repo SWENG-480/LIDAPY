@@ -26,7 +26,7 @@ class SensoryMemory(ConcreteSensoryMemoryFactory):
 
         # PAM observer/notifier
         self.add_module("notifier", ModuleNotifier())
-        self.add_module("observer", PAMAdapter())
+        self.add_module("PAMAdapter", PAMAdapter())
 
         #self.listeners = [] #initializing listener class
         self.add_attribute("state", None)
@@ -43,24 +43,25 @@ class SensoryMemory(ConcreteSensoryMemoryFactory):
             state, info, surrounding_tiles, col, row = (
                 self.get_module("environment").reset(self))
         else:
-            col, row = (self.get_module("environment").col,
-                        self.get_module("environment").row)
+            col, row = (self.get_module("environment").get_attribute("col"),
+                        self.get_module("environment").get_attribute("row"))
 
         #Get agent's surroundings
         surrounding_tiles = (self.get_module("environment").
                              get_surrounding_tiles(
-            self.get_module("environment").row,
-            self.get_module("environment").col))
+            self.get_module("environment").get_attribute("row"),
+            self.get_module("environment").get_attribute("col")))
 
         #Sample an action from environment action space
-        action = self.get_module("environment").action_space.sample()
+        action = (self.get_module("environment").get_attribute("action_space").
+                  sample())
 
         #Bundle state, environment, and action info into dictionary
         event = {"state": state, "surrounding_tiles": surrounding_tiles,
                  "action": action}
 
         #Notify PAM of agent's state, surroundings and possible actions
-        self.get_module("observer").notify(event, self.get_module("pam"))
+        self.get_module("PAMAdapter").notify(event, self.get_module("pam"))
 
     def get_sensory_content(self, state, outcome, modality=None, params=None):
         """

@@ -3,14 +3,23 @@
 #Authors: Katie Killian, Brian Wachira, and Nicole Vadillo
 
 from src.ActionSelection.ActionSelection import ActionSelection
+from src.ActionSelection.Initialization.ConcreteActionSelectionFactory import \
+    ConcreteActionSelectionFactory
 from src.Environment.Environment import FrozenLakeEnvironment
+from src.Environment.Initialization.ConcreteEnvironmentFactory import \
+    ConcreteEnvironmentFactory
 from src.Framework.Agents.Agent import Agent
 from src.Framework.Initialization.ConcreteAgentFactory import ConcreteAgentFactory
+from src.PAM.Initialization.ConcretePAMFactory import PAMConcreteFactory
 from src.PAM.PAM import PerceptualAssociativeMemory
+from src.ProceduralMemory.Initialization.ConcreteProceduralMemoryFactory import \
+    ConcreteProceduralMemoryFactory
 from src.ProceduralMemory.ProceduralMemory import ProceduralMemory
 from src.SensoryMemory.Initialization.ConcreteSensoryMemoryFactory import \
     ConcreteSensoryMemoryFactory
 from src.SensoryMemory.SensoryMemory import SensoryMemory
+from src.SensoryMotorMemory.Initialization.ConcreteSensoryMotorMemoryFactory import \
+    ConcreteSensoryMotorMemoryFactory
 from src.SensoryMotorMemory.SensoryMotorMemoryImpl import \
     SensoryMotorMemoryImpl
 
@@ -20,32 +29,59 @@ if __name__ == "__main__":
     agent_factory = ConcreteAgentFactory()
     agent = agent_factory.get_agent(Agent())
 
+    # Create environment factory
+    environment_factory = ConcreteEnvironmentFactory()
+
+    #Initialize FrozenLake environment
+    frozen_lake_environment = (environment_factory.
+                               create_environment(FrozenLakeEnvironment()))
     # Add the environment module to the agent
-    agent.add_module("FrozenLakeEnvironment", FrozenLakeEnvironment())
+    agent.add_module("FrozenLakeEnvironment", frozen_lake_environment)
 
+    # Create Sensory Motor Memory factory
+    sensory_memory_factory = ConcreteSensoryMotorMemoryFactory()
+
+    # Instantiate Sensory Motor Memory Module
+    sensory_motor_memory = sensory_memory_factory.create_sensory_motor(
+        SensoryMotorMemoryImpl(agent.get_module("FrozenLakeEnvironment"),
+                               agent))
     # Add Sensory Motor Memory module
-    agent.add_module("SensoryMotorMemoryImpl",
-                     SensoryMotorMemoryImpl(
-                         agent.get_module("FrozenLakeEnvironment"), agent))
+    agent.add_module("SensoryMotorMemoryImpl", sensory_motor_memory)
 
-    # Add the Action Selection Module
-    agent.add_module("ActionSelection", ActionSelection(
+    # Create action selection factory
+    action_selection_factory = ConcreteActionSelectionFactory()
+
+    # Instantiate action_selection module
+    action_selection = action_selection_factory.create_action_selection(
+        ActionSelection(
         agent.get_module("FrozenLakeEnvironment"),
         agent.get_module("SensoryMotorMemoryImpl")))
 
-    # Add Procedural Memory
-    agent.add_module("ProceduralMemory", ProceduralMemory(
-        agent.get_module("ActionSelection")))
+    # Add the Action Selection Module
+    agent.add_module("ActionSelection", action_selection)
 
-    # Add PAM
-    agent.add_module("PerceptualAssociativeMemory",
-                     PerceptualAssociativeMemory(
+    # Create Procedural Memory Factory
+    procedural_memory_factory = ConcreteProceduralMemoryFactory()
+
+    #Instantiate Procedural Memory Factory
+    procedural_memory = procedural_memory_factory.create_procedural_memory(
+        ProceduralMemory(agent.get_module("ActionSelection")))
+    # Add Procedural Memory
+    agent.add_module("ProceduralMemory", procedural_memory)
+
+    # Create PAM factory
+    pam_factory = PAMConcreteFactory()
+
+    # Instantiate PAM module
+    PAM = pam_factory.create_pam(PerceptualAssociativeMemory(
                          agent.get_module("ProceduralMemory")))
+    # Add PAM Module
+    agent.add_module("PerceptualAssociativeMemory", PAM)
 
     # Create sensory memory factory
     sensory_mem_factory = ConcreteSensoryMemoryFactory()
 
-    # Initialize sensory memory from its factory
+    # Initialize sensory memory module
     SensoryMemory = sensory_mem_factory.create_sensory_memory(
         SensoryMemory(agent.get_module(
                          "FrozenLakeEnvironment"),

@@ -1,28 +1,22 @@
 from src.Framework.Initialization.AgentFactory import AgentFactory
+from src.GlobalModuleInterface.GlobalModuleFactory import GlobalModuleFactory
 
 
-class ConcreteAgentFactory(AgentFactory):
-# concrete factory for creating and initializing agents
+class ConcreteAgentFactory(AgentFactory, GlobalModuleFactory):
+    # concrete factory for creating and initializing agents
     def __init__(self):
         super().__init__()
-        self.modules = {}
-        self.attributes = {}
 
     def get_agent(self, agent_type):
         return agent_type
 
-    def add_module(self, module_name, module_instance):
-        # add a module to the agent
-        self.modules[module_name] = module_instance
+    # Run the agent through the environment
+    def run(self):
+        pass
 
-    def get_module(self, module_name):
-        return self.modules.get(module_name)  # retrieve a module by name
+    def notify_(self, action):
+        pass
 
-    def add_attribute(self, attribute, value):
-        self.attributes[attribute] = value
-
-    def update_attribute(self, attribute_name, value):
-        self.attributes[attribute_name] = value
-
-    def get_attribute(self, attribute_name):
-        return self.attributes.get(attribute_name)
+    def notify(self, state, reward, done, truncated, info, action,
+               surrounding_tiles):
+        pass

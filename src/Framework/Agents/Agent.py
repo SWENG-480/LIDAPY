@@ -36,17 +36,19 @@ class Agent(ConcreteAgentFactory):
         while not self.get_attribute("done"):
             if self.get_attribute("state") is None:
                 sensory_memory.run_sensors(self.get_attribute("state"),
-                                           self.get_attribute('col'),
-                                           self.get_attribute('row'), self)
+                                           self.get_attribute("col"),
+                                           self.get_attribute("row"), self)
                 print(
-                f"Initial Observation: State: {self.get_attribute('state')}"
-                    f", Percept: {self.get_attribute('surrounding_tiles')}")
+                f"Initial Observation: State: {self.get_attribute("state")}"
+                    f", Percept: {self.get_attribute("surrounding_tiles")}")
             else:
-                self.update_attribute('col', env.col)
-                self.update_attribute('row', env.row)
-                sensory_memory.run_sensors(self.get_attribute('state'),
-                                           self.get_attribute('col'),
-                                           self.get_attribute('row'), self)
+                self.update_attribute("col",
+                                      env.get_attribute("col"))
+                self.update_attribute("row",
+                                      env.get_attribute("row"))
+                sensory_memory.run_sensors(self.get_attribute("state"),
+                                           self.get_attribute("col"),
+                                           self.get_attribute("row"), self)
 
             print(f"Action: {self.get_attribute('action')}\n")
             print(f"State: {self.get_attribute('state')}, "

@@ -9,46 +9,59 @@ Input: Sensory Stimuli and cues from Sensory Memory
 Output: Local Associations, passed to others
 """
 from src.ModuleObserver.ModuleNotifier import ModuleNotifier as Notifier
+from src.PAM.Initialization.ConcretePAMFactory import PAMConcreteFactory
 from src.ProceduralMemory.ProceduralMemAdapter import ProceduralMemAdapter
 
 
-class PerceptualAssociativeMemory:
+class PerceptualAssociativeMemory(PAMConcreteFactory):
     def __init__(self, procedural_memory):
-        #Storing associations
+        super().__init__()
+        # Storing associations
         self.associations = {}
-        self.procedural_memory = procedural_memory
-        self.observer = ProceduralMemAdapter()
-        self.notifier = Notifier()
-        self.notifier.add_observer(self.observer)
-        self.state = None
-        self.surrounding_tiles = None
-        self.position = None
-        self.action = None
-        self.percept = None
-        self.action_value= {
+        # Adding relevant modules
+        self.add_module("procedural_memory", procedural_memory)
+        self.add_module("ProceduralMemAdapter",
+                        ProceduralMemAdapter())
+        self.add_module("notifier", Notifier())
+        self.get_module("notifier").add_observer(
+            self.get_module("ProceduralMemAdapter")
+        )
+        # Adding relevant attributes
+        self.add_attribute("state", None)
+        self.add_attribute("surrounding_tiles", None)
+        self.add_attribute("position", None)
+        self.add_attribute("action", None)
+        self.add_attribute("percept", None)
+        self.add_attribute("action_value", {
             "3": "up",
             "2": "right",
             "1": "down",
             "0": "left",
-        }
+        })
 
     def notify(self, event):
-        self.state = event["state"]
-        self.surrounding_tiles = event["surrounding_tiles"]
-        self.action = event["action"]
-        self.get_position(self.state)
-        self.learn(self.state, self.surrounding_tiles, self.action)
+        self.update_attribute("state", event["state"])
+        self.update_attribute("surrounding_tiles",
+                              event["surrounding_tiles"])
+        self.update_attribute("action", event["action"])
+        self.get_position(self.get_attribute("state"))
+        self.learn(self.get_attribute("state")
+                   , self.get_attribute("surrounding_tiles")
+                   , self.get_attribute("action"))
 
     def get_position(self, state):
         if state < 4:
-            self.position = [0, state]
+            self.update_attribute("position", [0, state])
         elif 3 < state < 8:
-            self.position = [1, state - 3]
+            self.update_attribute("position",
+                                  [1, state - 3])
         elif 7 < state < 12:
-            self.position = [2, state - 7]
+            self.update_attribute("position",
+                                  [2, state - 7])
         elif 11 < state < 16:
-            self.position = [3, state - 11]
-        return self.position
+            self.update_attribute("position",
+                                  [3, state - 11])
+        return self.get_attribute("position")
 
     def add_association(self, cue, pattern):
         #Add new associations
@@ -67,41 +80,47 @@ class PerceptualAssociativeMemory:
                                            f"default-pattern-{cue}")
             return self.associations[pattern]
 
+
     def learn(self, state, outcome, action):
-        if outcome[self.action_value[str(action)]] == "G":
-            self.percept = self.add_association("Move " + self.action_value[
-                                                    str(action)] + ","
-                                                        " Current state: " +
-                                                str(state), "goal")
-        elif outcome[self.action_value[str(action)]] == "H":
-            self.percept = self.add_association("Move " + self.action_value[
-                                                    str(action)] + ","
-                                                        " Current state: " +
-                                                str(state), "danger")
-        elif outcome[self.action_value[str(action)]] == "S":
-            self.percept = self.add_association("Move " + self.action_value[
-                                                    str(action)] + ","
-                                                        " Current state: " +
-                                                str(state), "start")
+        action_value = self.get_attribute("action_value")
+        #Get the corresponding action string ('up', 'down', 'left', 'right')
+        action_str = action_value[str(action)]
+
+        # Check what surrounding tile current action value corresponds to
+        # (Start (S), Hole (H), Goal (G), or Frozen (F)) and add to
+        # associations
+        if outcome[action_str] == "G":
+            self.update_attribute("percept",
+                                  self.add_association("Move " + action_str +
+                                                       ", Current state: " +
+                                                str(state), "goal"))
+        elif outcome[action_str] == "H":
+            self.update_attribute("percept",
+                                  self.add_association("Move " + action_str +
+                                                       ", Current state: " +
+                                                str(state), "danger"))
+        elif outcome[action_str] == "S":
+            self.update_attribute("percept",
+                                  self.add_association("Move " + action_str +
+                                                       ", Current state: " +
+                                                str(state), "start"))
         else:
-            self.percept = self.add_association("Move " + self.action_value[
-                                                    str(action)] + ","
-                                                        " Current state: " +
-                                                str(state), "safe")
+            self.update_attribute("percept",
+                                  self.add_association("Move " + action_str +
+                                                       ", Current state: " +
+                                                str(state), "safe"))
 
         # Notify Procedural Memory of the outcome
         action_event = {"Current State":
-                            self.retrieve_associations("Move " +
-                                                       self.action_value
-                                                            [str(self.action)]
-                                                            +
+                            self.retrieve_associations("Move " + action_str +
                                        ", Current state: " +  str(state)),
-                        "Percept": self.percept,
-                        "Action": self.action,
-                        "Position": self.position,
+                        "Percept": self.get_attribute("percept"),
+                        "Action": action,
+                        "Position": self.get_attribute("position"),
                         "State": state
                         }
-        self.observer.notify(action_event, self.procedural_memory)
+        self.get_module("ProceduralMemAdapter").notify(action_event,
+                                        self.get_module("procedural_memory"))
 
     """
     NEED: to connect to sensory memory, use data as cue for PAM
