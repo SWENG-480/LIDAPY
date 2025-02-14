@@ -5,7 +5,7 @@
 from src.Framework.Initialization.ConcreteAgentFactory import \
     ConcreteAgentFactory
 
-class Agent(ConcreteAgentFactory):
+class FrozenLakeAgent(ConcreteAgentFactory):
     def __init__(self):
         super().__init__()
 

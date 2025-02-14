@@ -5,19 +5,19 @@
 from src.ActionSelection.ActionSelection import ActionSelection
 from src.ActionSelection.Initialization.ConcreteActionSelectionFactory import \
     ConcreteActionSelectionFactory
-from src.Environment.Environment import FrozenLakeEnvironment
+from src.Environment.CliffWalkingEnvironment import CliffWalkingEnvironment
 from src.Environment.Initialization.ConcreteEnvironmentFactory import \
     ConcreteEnvironmentFactory
-from src.Framework.Agents.Agent import Agent
+from src.Framework.Agents.CliffWalkingAgent import CliffWalkingAgent
 from src.Framework.Initialization.ConcreteAgentFactory import ConcreteAgentFactory
+from src.PAM.CliffWalkingPAM import CliffWalkingPAM
 from src.PAM.Initialization.ConcretePAMFactory import PAMConcreteFactory
-from src.PAM.PAM import PerceptualAssociativeMemory
 from src.ProceduralMemory.Initialization.ConcreteProceduralMemoryFactory import \
     ConcreteProceduralMemoryFactory
 from src.ProceduralMemory.ProceduralMemory import ProceduralMemory
+from src.SensoryMemory.CliffWalkingSensoryMemory import CliffWalkingSensoryMem
 from src.SensoryMemory.Initialization.ConcreteSensoryMemoryFactory import \
     ConcreteSensoryMemoryFactory
-from src.SensoryMemory.SensoryMemory import SensoryMemory
 from src.SensoryMotorMemory.Initialization.ConcreteSensoryMotorMemoryFactory import \
     ConcreteSensoryMotorMemoryFactory
 from src.SensoryMotorMemory.SensoryMotorMemoryImpl import \
@@ -27,23 +27,23 @@ from src.SensoryMotorMemory.SensoryMotorMemoryImpl import \
 if __name__ == "__main__":
     # Create agent factory and initialize agent
     agent_factory = ConcreteAgentFactory()
-    agent = agent_factory.get_agent(Agent())
+    agent = agent_factory.get_agent(CliffWalkingAgent())
 
     # Create environment factory
     environment_factory = ConcreteEnvironmentFactory()
 
     #Initialize FrozenLake environment
     frozen_lake_environment = (environment_factory.
-                               create_environment(FrozenLakeEnvironment()))
+                               create_environment(CliffWalkingEnvironment()))
     # Add the environment module to the agent
-    agent.add_module("FrozenLakeEnvironment", frozen_lake_environment)
+    agent.add_module("CliffWalkingEnvironment", frozen_lake_environment)
 
     # Create Sensory Motor Memory factory
     sensory_memory_factory = ConcreteSensoryMotorMemoryFactory()
 
     # Instantiate Sensory Motor Memory Module
     sensory_motor_memory = sensory_memory_factory.create_sensory_motor(
-        SensoryMotorMemoryImpl(agent.get_module("FrozenLakeEnvironment"),
+        SensoryMotorMemoryImpl(agent.get_module("CliffWalkingEnvironment"),
                                agent))
     # Add Sensory Motor Memory module
     agent.add_module("SensoryMotorMemoryImpl", sensory_motor_memory)
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     # Instantiate action_selection module
     action_selection = action_selection_factory.create_action_selection(
         ActionSelection(
-        agent.get_module("FrozenLakeEnvironment"),
+        agent.get_module("CliffWalkingEnvironment"),
         agent.get_module("SensoryMotorMemoryImpl")))
 
     # Add the Action Selection Module
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     pam_factory = PAMConcreteFactory()
 
     # Instantiate PAM module
-    PAM = pam_factory.create_pam(PerceptualAssociativeMemory(
+    PAM = pam_factory.create_pam(CliffWalkingPAM(
                          agent.get_module("ProceduralMemory")))
     # Add PAM Module
     agent.add_module("PerceptualAssociativeMemory", PAM)
@@ -83,12 +83,11 @@ if __name__ == "__main__":
 
     # Initialize sensory memory module
     SensoryMemory = sensory_mem_factory.create_sensory_memory(
-        SensoryMemory(agent.get_module(
-                         "FrozenLakeEnvironment"),
-                     agent.get_module("PerceptualAssociativeMemory"),agent))
+    CliffWalkingSensoryMem(agent.get_module("CliffWalkingEnvironment"),
+                     agent.get_module("PerceptualAssociativeMemory"), agent))
 
     # Add the Sensory Memory module
-    agent.add_module("SensoryMemory", SensoryMemory)
+    agent.add_module("CliffWalkingSensoryMemory", SensoryMemory)
 
     #Add attributes relevant to this agent
     agent.add_attribute("state", None)
