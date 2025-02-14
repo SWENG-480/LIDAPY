@@ -33,10 +33,10 @@ if __name__ == "__main__":
     environment_factory = ConcreteEnvironmentFactory()
 
     #Initialize FrozenLake environment
-    frozen_lake_environment = (environment_factory.
+    cliff_walking_environment = (environment_factory.
                                create_environment(CliffWalkingEnvironment()))
     # Add the environment module to the agent
-    agent.add_module("CliffWalkingEnvironment", frozen_lake_environment)
+    agent.add_module("CliffWalkingEnvironment", cliff_walking_environment)
 
     # Create Sensory Motor Memory factory
     sensory_memory_factory = ConcreteSensoryMotorMemoryFactory()
