@@ -2,7 +2,6 @@ import pytest
 from unittest.mock import Mock
 from src.SensoryMemory.SensoryMemory import SensoryMemory
 
-
 @pytest.fixture
 def setup_sensory_memory():
     # Create mock objects for environment, pam, and agent
@@ -14,7 +13,6 @@ def setup_sensory_memory():
     sensory_memory = SensoryMemory(environment=environment, pam=pam, agent=agent)
 
     return sensory_memory, environment, pam, agent
-
 
 def test_run_sensors(setup_sensory_memory):
     sensory_memory, environment, pam, agent = setup_sensory_memory
@@ -33,7 +31,6 @@ def test_run_sensors(setup_sensory_memory):
     environment.get_attribute.assert_any_call("row")
     environment.get_surrounding_tiles.assert_called_once()
 
-
 def test_notify(setup_sensory_memory):
     sensory_memory, environment, pam, agent = setup_sensory_memory
 
@@ -43,7 +40,6 @@ def test_notify(setup_sensory_memory):
 
     # Verify state is updated correctly
     assert sensory_memory.get_attribute("state") == test_state
-
 
 def test_get_sensory_content(setup_sensory_memory):
     sensory_memory, environment, pam, agent = setup_sensory_memory

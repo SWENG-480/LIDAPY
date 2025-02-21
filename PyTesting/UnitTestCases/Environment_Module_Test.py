@@ -2,51 +2,78 @@ import pytest
 from src.Environment.FrozenLakeEnvironment import FrozenLakeEnvironment
 from gymnasium import make
 
-@pytest.fixture #Decorator
-def environment():
-    return FrozenLakeEnvironment()
 
-"""Testing the rest function"""
-def test_reset(environment, mocker):
-    module_mock = mocker.Mock()
-    state, info, surrounding_tiles, col, row = environment.reset(module_mock)
+@pytest.fixture
+def env():
+    """
+    Pytest fixture to initialize the FrozenLake environment before each test.
+    Ensures a fresh instance is used for every test function.
+    """
+    environment = FrozenLakeEnvironment(render_mode="rgb_array", size=4)
+    yield environment  # Provides the environment instance to test functions
+    environment.close()  # Cleanup after test execution
 
-    assert col == 0
-    assert row == 0
-    assert state is not None
-    assert info is not None
-    mocker.spy(environment, 'get_surrounding_tiles')
-    environment.get_surrounding_tiles.assert_called_once_with(0,0)
 
-def test_step(environment, mocker):
-    action = 2 #Example action of the agent moving right
-    module_mock = mocker.Mock()
+def test_reset_function(env):
+    """
+    Tests that the reset function properly initializes the environment
+    and places the agent in the correct starting position.
+    """
+    state, info, surrounding_tiles, col, row = env.reset(module="test_module")
 
-    mocker.spy(environment, 'update_position')
-    state, reward, done, truncated, info = environment.step(action, module_mock)
+    # Assertions to verify the correct initial state
+    assert col == 0, "Agent should start at column 0"
+    assert row == 0, "Agent should start at row 0"
+    assert isinstance(surrounding_tiles, dict), "Surrounding tiles should be a dictionary"
+    assert state is not None, "State should not be None after reset"
 
-    environment.update_position.assert_called_once_with(action)
-    assert state is not None
-    assert reward is not None
-    assert done is not None
-    assert truncated is not None
-    assert info is not None
 
-def test_render(environment, mocker):
-    mocker.patch.object(environment.get_module("env"), 'render')
-    environment.render()
-    environment.get_module("env").render.assert_called_once_with()
+def test_step_function(env):
+    """
+    Tests the step function by moving the agent in the Frozen Lake environment
+    and verifying state updates.
+    """
+    initial_col, initial_row = env.get_attribute("col"), env.get_attribute("row")
 
-def test_update_position(environment):
-    environment.update_position(2) #move right
-    assert environment.get_attribute("col") == 1
-    assert environment.get_attribute("row") == 0
+    new_state, reward, done, truncated, info = env.step(action=1, module="test_module")  # Move down
 
-    environment.update_position(1) # moving down
-    assert environment.get_attribute("row") == 1
+    # Verifying if the agent's position has updated correctly
+    assert env.get_attribute("row") == initial_row + 1, "Row should increase when moving down"
 
-    environment.update_position(0) #move left
-    assert environment.get_attribute("col") == 0
+    # Ensuring reward and done flag are correctly returned
+    assert isinstance(reward, float), "Reward should be a floating point number"
+    assert isinstance(done, bool), "Done should be a boolean indicating episode completion"
 
-    environment.update_position(3) #move up
-    assert environment.get_attribute("row") == 0
+
+def test_render_function(env):
+    """
+    Tests the render function to ensure it does not raise any errors.
+    """
+    try:
+        env.render()
+    except Exception as e:
+        pytest.fail(f"Render function raised an error: {e}")
+
+
+def test_update_position_function(env):
+    """
+    Tests the update_position function to check if the agent moves correctly
+    based on the action taken.
+    """
+    env.update_position(action=2)  # Move right
+    assert env.get_attribute("col") == 1, "Column should increase when moving right"
+
+    env.update_position(action=0)  # Move left
+    assert env.get_attribute("col") == 0, "Column should return to original position"
+
+
+def test_update_position_boundaries(env):
+    """
+    Tests update_position function for boundary conditions.
+    Ensures the agent does not move out of bounds.
+    """
+    env.update_position(action=3)  # Attempt to move up at the top boundary
+    assert env.get_attribute("row") == 0, "Agent should not move above row 0"
+
+    env.update_position(action=0)  # Attempt to move left at the left boundary
+    assert env.get_attribute("col") == 0, "Agent should not move left of column 0"
